@@ -1,0 +1,40 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Training artifacts and outputs
+artifacts/
+outputs/
+
+# OS files
+.DS_Store
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/
+
+# Matplotlib cache
+.mplconfigdir/
+
+.stale_paper_DO_NOT_REFER/
+
+paper/
+
+# Local caches and configuration
+.pytest_cache/
+.ruff_cache/
+outputs_smoke/
+.env
+.env.*

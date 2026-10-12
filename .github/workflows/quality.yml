@@ -1,0 +1,31 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MPLCONFIGDIR: /tmp/copsens-matplotlib
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install locked dependencies
+        run: uv sync --dev --frozen
+      - name: Static checks
+        run: uv run ruff check .
+      - name: Unit tests
+        run: uv run pytest -q
+      - name: Compile Python sources
+        run: uv run python -m compileall -q run.py scripts src tests
+      - name: Experiment preflight
+        run: uv run python scripts/validate_revision_outputs.py --preflight

@@ -1,0 +1,111 @@
+% Maintained model specification for the bounded sensing model.
+% Exactness label: paper-exact.
+
+To reflect the finite resolution and saturation of practical onboard sensors,
+we define $d_{i,k}$ as the shortest Euclidean distance from vehicle $i$ to the
+rectangular RoI of task $k$, regularized as
+$\bar d_{i,k}=\max(d_{i,k},d_{\min})$. The bounded spatial sensing potential is
+
+\begin{equation}
+\bar A_{i,k}=\min\!\left\{
+\delta_i(1-\mathcal O_{i,k})
+\left(\frac{\bar d_{i,k}}{r_0}\right)^{-\zeta},
+A_{\max}
+\right\}.
+\end{equation}
+
+Unlike an unbounded inverse-distance model, $\bar A_{i,k}$ does not imply
+arbitrarily large information gain when a vehicle is located close to or
+inside an RoI. The corresponding sensing quality is
+
+\begin{equation}
+q_{i,k}(\tau_{i,k}^{s})=\bar A_{i,k}
+\ln\!\left(1+\gamma s_i\tau_{i,k}^{s}\right).
+\end{equation}
+
+For candidate selection, we first count the number of coverage segments and
+then apply the diversity factor:
+
+\begin{equation}
+S_k=\max\!\left(1,\left\lceil\frac{a_k}{2r_0}\right\rceil\right),\qquad
+N_{\max}^{(k)}=\max\!\left(2,\left\lceil\varrho S_k\right\rceil\right).
+\end{equation}
+
+Candidates are ranked lexicographically by
+$(\bar A_{i,k},A^{\rm raw}_{i,k},-i)$ in descending order. Thus the bounded
+potential used by the sensing-quality model is the primary selection score;
+the raw pre-saturation potential is consulted only to resolve ties at
+$A_{\max}$, and the vehicle index provides a final deterministic tie-break.
+
+Let $c_{i,k}\in\{0,1\}$ denote whether vehicle $i$ remains a candidate for
+task $k$, and let $m_i=\max_k c_{i,k}$ be its vehicle-level eligibility
+indicator. Candidate selection precedes the leader's bandwidth allocation.
+The actor emits a bandwidth-utilization logit and vehicle logits $z_i$; the
+feasible allocation is decoded as
+
+\begin{equation}
+w_i=
+\begin{cases}
+u\dfrac{m_i\exp(z_i)}{\sum_jm_j\exp(z_j)}, & \sum_jm_j>0,\\[4pt]
+0, & \sum_jm_j=0,
+\end{cases}
+\qquad u=\operatorname{sigmoid}(z_u).
+\end{equation}
+
+Thus a vehicle excluded from every task receives no uplink bandwidth. When
+candidate pruning is disabled, $m_i=1$ for every vehicle and the decoder
+reduces to the unmasked sigmoid/softmax allocation.
+
+The formal experiments use $d_{\min}=1$ m, $A_{\max}=50$, $r_0=80$ m,
+$\varrho=4$, and $p_{\max}=0.3$. For the maintained short-RoI geometry, this
+retains up to four ranked candidates per task, providing headroom for multiple
+valid contributors while still pruning most vehicle--task pairs at the default
+density. The reward-penalty weights are
+$(\omega_{\mathrm{fail}},\omega_{\mathrm{lat}},
+\omega_{\mathrm{part}})=(2,3,3)$. These parameters are applied identically to
+all applicable learning-based methods, together with the fixed common learning
+rate, clipping range, training budget, and network widths declared in the
+experiment protocol.
+
+Task completion is evaluated by
+$I_k=\mathbb{I}(Q_k>0)$ and is reported both overall and separately for the
+high-, medium-, and low-urgency classes. Safety-critical and traffic-efficiency
+tasks are treated as protected services. A low-urgency environment-maintenance
+task, however, may remain unserved when its marginal sensing benefit does not
+justify the required payment, energy consumption, and bandwidth cost. This is
+a permitted priority-aware allocation outcome rather than a feasibility
+violation; it is still counted as a non-completed task, and the corresponding
+low-urgency completion rate is disclosed explicitly.
+
+% Resource and mechanism analyses.
+Resource-sensitivity results use selected checkpoints. Unless otherwise stated, each point first averages over
+32 independent scheduling-cycle realizations and is then summarized over eight
+independent training seeds; error bars denote 95\% confidence intervals across
+training seeds. For the CPU-capacity study, every learning-based method is
+trained once under the same episode-level domain randomization: one of five
+CPU-capacity intervals centered at 5, 10, 15, 20, and 25 Gcycles/s is sampled
+uniformly for each scheduling cycle, after which the vehicles' $F_i$ values are
+sampled independently within that interval. The selected policy is then tested
+at each fixed interval; no method is retrained separately for an individual
+CPU-capacity point. The three panels report social welfare, RSU utility, and
+task-completion rate, respectively.
+The bandwidth-robustness panel reuses the bandwidth sweep, which uses
+five common training seeds and reports its confidence intervals across those
+five seed-level means.
+
+For pricing sensitivity, we hold the learned bandwidth allocation fixed and
+perturb only the learned price according to
+\begin{equation}
+p_k(\vartheta)=\min\!\left\{p_{\max},
+\max\!\left(0,\vartheta p_k^{\mathrm{TE}}\right)\right\}.
+\end{equation}
+The analytical follower responses are recomputed after each perturbation.
+Source data additionally report the fraction of prices clipped by $p_{\max}$.
+
+The compression-energy panel is a component-level counterfactual analysis.
+For vehicles selected by the unperturbed TE-PPO policy, the sampled vehicle and
+channel state, bandwidth allocation, and sensing duration are held fixed while
+only the compression ratio is varied. Consequently, the panel isolates the
+opposing trends of local computation energy and uplink transmission energy; it
+does not claim that every counterfactual compression point is a feasible or
+re-optimized policy response.

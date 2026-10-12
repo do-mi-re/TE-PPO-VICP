@@ -1,0 +1,54 @@
+seed: 123
+scenario:
+  num_vehicles: 20
+  pricing_budget_max: 0.3
+  roi_distance_model: rectangle
+  distance_floor_m: 1.0
+  spatial_potential_max: 50.0
+reward:
+  omega_fail: 2.0
+  omega_lat: 3.0
+  omega_part: 3.0
+  min_participants: 1
+policy:
+  actor:
+    hidden_sizes: [256, 256]
+    activation: relu
+    share_features_extractor: true
+    log_std_init: -1.0
+  critic:
+    hidden_sizes: [256, 256]
+    activation: relu
+algorithm:
+  name: spis
+  fixed_price: 0.15
+  total_timesteps: 600000
+  learning_rate: 0.0003
+  n_envs: 8
+  n_steps: 128
+  batch_size: 256
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 1.0
+  clip_range: 0.2
+  clip_range_vf: 0.2
+  initial_price_fraction: 0.5
+  ent_coef: 0.01
+  vf_coef: 0.25
+  max_grad_norm: 0.3
+  target_kl: 0.02
+  action_logit_bound: 8.0
+  device: auto
+evaluation:
+  interval_env_steps: 3072
+  n_eval_episodes: 4
+  seed_list: [20123, 20124, 20125, 20126]
+normalization:
+  norm_obs: true
+  norm_reward: true
+  clip_obs: 10.0
+  clip_reward: 10.0
+artifacts:
+  root_dir: artifacts/baselines
+  run_name: spis
+  checkpoint_freq: 8192

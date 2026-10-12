@@ -1,0 +1,59 @@
+seed: 123
+
+scenario:
+  num_vehicles: 4
+  pricing_budget_max: 0.3
+  roi_distance_model: rectangle
+  distance_floor_m: 1.0
+  spatial_potential_max: 50.0
+
+reward:
+  omega_fail: 2.0
+  omega_lat: 3.0
+  omega_part: 3.0
+  min_participants: 1
+
+policy:
+  actor:
+    hidden_sizes: [256, 256]
+    activation: relu
+    share_features_extractor: true
+    log_std_init: -1.5
+  critic:
+    hidden_sizes: [256, 256]
+    activation: relu
+
+algorithm:
+  total_timesteps: 64
+  learning_rate: 0.0003
+  n_envs: 4
+  n_steps: 8
+  batch_size: 32
+  n_epochs: 2
+  gamma: 0.99
+  gae_lambda: 1.0
+  clip_range: 0.2
+  clip_range_vf: 0.2
+  initial_price_fraction: 0.5
+  ent_coef: 0.01
+  vf_coef: 0.25
+  max_grad_norm: 0.3
+  target_kl: 0.02
+  action_logit_bound: 8.0
+  device: auto
+
+evaluation:
+  interval_env_steps: 64
+  n_eval_episodes: 2
+  seed_list: [20123, 20124]
+
+normalization:
+  norm_obs: true
+  norm_reward: true
+  clip_obs: 10.0
+  clip_reward: 10.0
+
+artifacts:
+  root_dir: artifacts/ppo
+  run_name: train_small
+  checkpoint_freq: 16
